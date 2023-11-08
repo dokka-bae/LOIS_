@@ -1,7 +1,9 @@
 import parser
 
 def main():
-    parser.parsing()
+    for i in range(1):
+        data = parser.parsing(i)
+        print(data)
 
 
 if __name__ == '__main__':
