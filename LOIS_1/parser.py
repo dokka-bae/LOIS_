@@ -1,10 +1,20 @@
 import file_reader
+import re
+def is_valid(line: str):
+    for item in line['values']:
+        if re.match(r"[a-z]\([a-z]\) = {(\([a-z], \d(\.\d)?\), )*(\([a-z], \d(\.\d)?\))?}",item) == None:
+            raise ValueError
+        for item in line['functions']:
+            #f(x, y) = (p(x) ~> v(y))
+            if re.match(r'[a-z]\([a-z], [a-z]\) = \([a-z]\([a-z]\) ~> [a-z]\([a-z]\)\)',item) == None:
+                raise ValueError
 def parsing(iteration : int = 0):
     data = {
         'values': [],
         'functions': []
     }
     row = file_reader.read_file(f".\\tests\\{iteration+1}")
+    is_valid(row)
     for item in row['values']:
         key = item[:item.index('(')]
         item = item[item.index('{'):]
