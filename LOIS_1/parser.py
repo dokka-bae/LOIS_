@@ -2,12 +2,13 @@ import file_reader
 import re
 def is_valid(line: str):
     for item in line['values']:
+        # p(x) = {(a, 0), (b, 0.3), (c, 1)}
         if re.match(r"[a-z]\([a-z]\) = {(\([a-z], \d(\.\d)?\), )*(\([a-z], \d(\.\d)?\))?}",item) == None:
             raise ValueError
-        for item in line['functions']:
-            #f(x, y) = (p(x) ~> v(y))
-            if re.match(r'[a-z]\([a-z], [a-z]\) = \([a-z]\([a-z]\) ~> [a-z]\([a-z]\)\)',item) == None:
-                raise ValueError
+    for item in line['functions']:
+        #f(x, y) = (p(x) ~> v(y))
+        if re.match(r'[a-z]\([a-z], [a-z]\) = \([a-z]\([a-z]\) ~> [a-z]\([a-z]\)\)',item) == None:
+            raise ValueError
 def parsing(iteration : int = 0):
     data = {
         'values': [],
