@@ -1,3 +1,13 @@
+'''
+Лабораторная работа №1
+по дисциплине ЛОИС
+Выполнена студентами группы 121703
+Довидович Тимофей Михайлович, Залевский Андрей Сергеевич, Кочурко Василий Вячеславович
+Вариант 24:
+Импликация Вебера
+'''
+
+
 from typing import Dict, List
 import pandas as pd
 
@@ -9,23 +19,28 @@ class KeyValueError(Exception):
         return f"There is no key '{self.__object}' in sets"
 
 
-def implication(data: Dict[str, List]) -> List[str]:
+def implication_processing(data: Dict[str, List]) -> List[str]:
     # {'values': [{'p': {'a': '0', 'b': '0.3', 'c': '1'}}, 
     #             {'v': {'f': '1', 'd': '0.5', 't': '0'}}, 
     #             {'b': {'a': '0.8', 'b': '0.3', 'c': '0.9'}}], 
     #  'functions': [['p', 'v'], ['v', 'b']]}
-    formulas : List = []
+    formulas = []
     for functions in data['functions']:
         for function in functions:
             if function not in data['values'].keys():
                 raise KeyValueError(function)
         x,y = data['values'][functions[0]],data['values'][functions[1]]
-        def_matrix = build_default_matrix(x,y)
-        triangle_norm_matrix = build_triangle_matrix(x,y,def_matrix)
-        formulas.append(build_formula(triangle_norm_matrix))
+        implication_matrix = implication(x,y)
+        print(implication_matrix)
+        fuzzy_conjunctions = []
+        for item in data['values'].values():
+            if item.keys() == x.keys():
+                fuzzy_conjunctions.append(fuzzy_conjunction(item,y,implication_matrix))
+                print(fuzzy_conjunctions[-1])
+        formulas.append(build_formula(fuzzy_conjunctions)) 
     return formulas
 
-def build_default_matrix(x:Dict = {},y:Dict = {}) -> pd.DataFrame:
+def implication(x:Dict = {},y:Dict = {}) -> pd.DataFrame: #implication
     matrix : pd.DataFrame = pd.DataFrame(columns=y.keys(),index=x.keys())
     for x_key in x.keys():
         for y_key in y.keys():
@@ -35,25 +50,26 @@ def build_default_matrix(x:Dict = {},y:Dict = {}) -> pd.DataFrame:
                 matrix.loc[x_key][y_key] = float(y[y_key])
     return matrix
 
-def build_triangle_matrix(x:Dict = {},y:Dict = {}, def_matrix:pd.DataFrame = pd.DataFrame) -> pd.DataFrame:
-    # if (A = 1 & B = 1)  => 1
-    # else if (B = 1 & A < 1) => A
-    # else if (B < 1 & A = 1) => B
-    # else => 0
-    matrix : pd.DataFrame = pd.DataFrame(0,columns=y.keys(),index=x.keys())
+def fuzzy_conjunction(x:Dict = {},y:Dict = {}, implication_matrix:pd.DataFrame = pd.DataFrame) -> pd.DataFrame: # нечеткий вывод
+    matrix : pd.DataFrame = pd.DataFrame(columns=y.keys(),index=x.keys())
     for x_key in x.keys():
         for y_key in y.keys():
-            if def_matrix.loc[x_key][y_key] == 1. and float(x[x_key]) == 1. :
-                matrix.loc[x_key][y_key] = 1.
-            elif float(x[x_key]) == 1. and def_matrix.loc[x_key][y_key] < 1.:
-                matrix.loc[x_key][y_key] = def_matrix.loc[x_key][y_key]
-            elif float(x[x_key]) < 1. and def_matrix.loc[x_key][y_key] == 1.:
+            if float(x[x_key]) == 1 and implication_matrix.loc[x_key][y_key] == 1:
+                matrix.loc[x_key][y_key] = 1
+            elif float(x[x_key]) < 1 and implication_matrix.loc[x_key][y_key] == 1:
                 matrix.loc[x_key][y_key] = float(x[x_key])
+            elif float(x[x_key]) == 1 and implication_matrix.loc[x_key][y_key] < 1:
+                matrix.loc[x_key][y_key] = implication_matrix.loc[x_key][y_key]
+            else:
+                matrix.loc[x_key][y_key] = 0
     return matrix
 
-def build_formula(triangle_matrix: pd.DataFrame) -> str:
-    formula : List = []
-    for col in triangle_matrix.columns:
-        formula.append(f'({col},{triangle_matrix[col].max()})')
-    return '{'+','.join(formula)+'}'
+def build_formula(fuzzy_conjunctions:List[pd.DataFrame]) -> str:
+    result_formulas = []
+    for formula in fuzzy_conjunctions:
+        result_formula = []
+        for col in formula:
+            result_formula.append(f'({col},{formula[col].max()})')
+        result_formulas.append('{'+','.join(result_formula)+'}')
+    return result_formulas
       

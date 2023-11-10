@@ -1,3 +1,13 @@
+'''
+Лабораторная работа №1
+по дисциплине ЛОИС
+Выполнена студентами группы 121703
+Довидович Тимофей Михайлович, Залевский Андрей Сергеевич, Кочурко Василий Вячеславович
+Вариант 24:
+Импликация Вебера
+'''
+
+
 from file_reader import read_file
 import re
 from typing import List, Dict
@@ -38,7 +48,7 @@ def parsing(iteration: int = 0) -> Dict[str,List]:
         'functions': []
     }
     for item in sets:
-        key = item[:item.index('(')]
+        key = item[:item.index('=')]
         item = item[item.index('{'):]
         item = item.replace("{","").replace("}","")
         if len(item) == 0:
@@ -55,6 +65,6 @@ def parsing(iteration: int = 0) -> Dict[str,List]:
     for item in functions:
         key = item[:item.index('(')]
         item = item[item.index('=(')+2:][:-1]
-        key = [x[:x.index('(')] for x in item.split('~>')]
+        key = [x[:x.index(')')+1] for x in item.split('~>')]
         data['functions'].append(key)
     return data
